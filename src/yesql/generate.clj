@@ -4,7 +4,8 @@
             [clojure.string :refer [join lower-case]]
             [yesql.util :refer [create-root-var]]
             [yesql.types :refer [map->Query]]
-            [yesql.statement-parser :refer [tokenize]])
+            [yesql.statement-parser :refer [tokenize]]
+            [clojure.core.async :as async])
   (:import [yesql.types Query]))
 
 (def in-list-parameter?
@@ -80,16 +81,38 @@
   (jdbc/db-do-prepared-return-keys db statement-and-params))
 
 (defn query-handler
-  [db sql-and-params
-   {:keys [row-fn result-set-fn identifiers]
-    :or {identifiers lower-case
-         row-fn identity
-         result-set-fn doall}
-    :as call-options}]
-  (jdbc/query db sql-and-params
-              {:identifiers identifiers
-               :row-fn row-fn
-               :result-set-fn result-set-fn}))
+  [db sql-and-params {:keys [row-fn result-set-fn identifiers as-arrays?]
+                      :or   {identifiers   identity
+                             row-fn        identity
+                             result-set-fn doall}
+                      :as   call-options}]
+  (jdbc/query db sql-and-params {:as-arrays?    as-arrays?
+                                 :identifiers   identifiers
+                                 :row-fn        row-fn
+                                 :result-set-fn result-set-fn}))
+
+(defn query-handler-stream
+  [db sql-and-params {:keys [row-fn identifiers as-arrays? result-channel fetch-size]
+                      :or   {identifiers identity
+                             row-fn      identity
+                             fetch-size  1}}]
+  (let [call-options {:as-arrays?  as-arrays?
+                      :identifiers identifiers
+                      :row-fn      row-fn
+                      :fetch-size  fetch-size}]
+    (assert result-channel "You must supply a result channel e.g. {:result-channel `chan`}")
+    (jdbc/db-query-with-resultset
+      db
+      sql-and-params
+      (fn [rs]
+        (loop [[row & rows] (jdbc/result-set-seq rs call-options)]
+          (if-not row
+            (do
+              (async/>!! result-channel :result-set-end)
+              (async/close! result-channel))
+            (when (async/>!! result-channel row)
+              (recur rows)))))
+      call-options)))
 
 (defn generate-query-fn
   "Generate a function to run a query.
@@ -105,6 +128,7 @@
   (let [jdbc-fn (cond
                   (= (take-last 2 name) [\< \!]) insert-handler
                   (= (last name) \!) execute-handler
+                  (:stream? query-options) query-handler-stream
                   :else query-handler)
         required-args (expected-parameter-list statement)
         global-connection (:connection query-options)

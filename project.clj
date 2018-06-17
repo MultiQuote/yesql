@@ -1,11 +1,16 @@
-(defproject yesql "0.5.3"
+(defproject yesql "0.5.3.1-SNAPSHOT"
   :description "A Clojure library for using SQL"
   :url "https://github.com/krisajenkins/yesql"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/java.jdbc "0.5.8"]
-                 [instaparse "1.4.1" :exclusions [org.clojure/clojure]]]
+                 [org.clojure/java.jdbc "0.7.6"]
+                 [instaparse "1.4.1" :exclusions [org.clojure/clojure]]
+                 [org.clojure/core.async "0.3.442"]]
+
+  :repositories [["adb" {:url "https://repo.sourcingcloud.com:4043" :username "" :password ""}]]
+  :deploy-repositories [["adb" {:url ~(str (System/getenv "ADB_DEPLOY_URL")) :username "" :password ""}]]
+
   :pedantic? :abort
   :scm {:name "git"
         :url "https://github.com/krisajenkins/yesql"}

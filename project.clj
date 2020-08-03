@@ -5,7 +5,6 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/java.jdbc "0.7.6"]
-                 ;[org.clojure/java.jdbc "0.7.7-SNAPSHOT"]
                  [instaparse "1.4.1" :exclusions [org.clojure/clojure]]
                  [org.clojure/core.async "0.3.442"]]
 

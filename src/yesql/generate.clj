@@ -59,7 +59,8 @@
                                          args]
                         (symbol? token) [(str query (args-to-placeholders ""))
                                          (conj parameters (keyword token))
-                                         args])) ["" [] initial-args] tokens)] (concat [final-query] (mapv (apply juxt final-parameters) initial-args)))
+                                         args])) ["" [] initial-args] tokens)]
+        (concat [final-query] (mapv (apply juxt final-parameters) initial-args)))
       (let [[final-query final-parameters consumed-args]
             (reduce (fn [[query parameters args] token]
                       (cond

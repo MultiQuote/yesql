@@ -12,7 +12,6 @@
                               :no-auth true
                               :sign-releases false}]]
 
-  :pedantic? :abort
   :scm {:name "git"
         :url "https://github.com/krisajenkins/yesql"}
 
@@ -26,7 +25,7 @@
                   ["vcs" "push"]]
 
   :plugins [[lein-eftest "0.5.3"]
-            [s3-wagon-private "1.3.4" :exclusions [com.fasterxml.jackson.core/jackson-core commons-logging]]]
+            [s3-wagon-private "1.3.4"]]
 
   :profiles {:dev {:dependencies [[expectations "2.1.3" :exclusions [org.clojure/clojure]]
                                   [org.apache.derby/derby "10.12.1.1"]]

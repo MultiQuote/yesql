@@ -1,4 +1,4 @@
-(defproject yesql "0.5.4"
+(defproject yesql "0.5.5-SNAPSHOT"
   :description "A Clojure library for using SQL (forked)"
   :url "https://github.com/krisajenkins/yesql"
   :license {:name "Eclipse Public License"
